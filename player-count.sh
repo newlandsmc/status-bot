@@ -74,5 +74,16 @@ fi
 #Send Discord API calls
 ######################
 payload="{\"embeds\":[{\"description\":\"Java: $javaStatus\nBedrock: $bedrockStatus\n$players\nLast Ping: $cacheFormat\",\"title\":\"EXTERNAL STATUS: $globalStatus\",\"color\":\"$color\"}]}"
-curl -s -X PATCH -H "Authorization: Bot $botToken" -H "Content-Type: application/json" -d "$payload" $channel/messages/$playersMessage > /dev/null
+cycles=1
+while [ $cycles -le 3 ]
+do
+  respone=$(curl -s -X PATCH -H "Authorization: Bot $botToken" -H "Content-Type: application/json" -d "$payload" $channel/messages/$playersMessage)
+  if [ "$(echo $response | jq '.code')" == "30046" ]
+  then
+    cycles=$((cycles + 1))
+    sleep 10
+  else
+    cycles=4
+  fi
+done
 curl -s -X PATCH -H "Authorization: Bot $botToken" -H "Content-Type: application/json" -d "{\"name\":\"PLAYERS ONLINE: $playersOnline\"}" $categoryChannel > /dev/null

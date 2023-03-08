@@ -56,7 +56,7 @@ apiCall () {
   cycles=1
   while [ $cycles -le 3 ]
   do
-    respone=$(curl -X PATCH -H "Authorization: Bot $botToken" -H "Content-Type: application/json" -d "{\"embeds\":[{\"title\":\"$(echo $server | awk '{print toupper($0)}') : $state\",\"description\":\"Uptime: $uptime\nLast Ping: $dateFormat\",\"color\":\"$color\"}]}" $statusChannel/messages/$messageID)
+    respone=$(curl -s -X PATCH -H "Authorization: Bot $botToken" -H "Content-Type: application/json" -d "{\"embeds\":[{\"title\":\"$(echo $server | awk '{print toupper($0)}') : $state\",\"description\":\"Uptime: $uptime\nLast Ping: $dateFormat\",\"color\":\"$color\"}]}" $statusChannel/messages/$messageID)
     if [ "$(echo $response | jq '.code')" == "30046" ]
     then
       cycles=$((cycles + 1))
