@@ -68,15 +68,18 @@ apiCall () {
 }
 
 startServer () {
+  apiCall
   cycles2=1
   while [ $cycles2 -le 5 ]
   do
-    apiCall
+    getState
     if [ $state == "ACTIVE" ]
     then
+      apiCall
       cycles2=6
     else
       cycles2=$((cycles2 + 1))
+      sleep 10
     fi
   done
 }
