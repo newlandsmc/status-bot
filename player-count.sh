@@ -34,7 +34,7 @@ then
 elif [ $bedrockStatus == "Online" ] || [ $javaStatus == "Online" ]
 then
   globalStatus="UNHEALTHY"
-  color="16763904"
+  color="15135241"
 else
   globalStatus="DEAD"
   color="14559272"
@@ -67,12 +67,12 @@ if [ $cacheTime -eq 0 ]
 then
   cacheFormat="unknown"
 else
-  cacheFormat=$(echo $cacheTime | xargs -i date +"%H:%M%Z" -d@{})
+  cacheFormat=$(echo $cacheTime | xargs -i date +"%B %d %H:%M%Z" -d@{})
 fi
 
 ######################
 #Send Discord API calls
 ######################
-payload="{\"embeds\":[{\"description\":\"Java: $javaStatus\nBedrock: $bedrockStatus\n$players\n\nLast Ping: $cacheFormat\",\"title\":\"External Status: $globalStatus\",\"color\":\"$color\"}]}"
+payload="{\"embeds\":[{\"description\":\"Java: $javaStatus\nBedrock: $bedrockStatus\n$players\nLast Ping: $cacheFormat\",\"title\":\"EXTERNAL STATUS: $globalStatus\",\"color\":\"$color\"}]}"
 curl -s -X PATCH -H "Authorization: Bot $botToken" -H "Content-Type: application/json" -d "$payload" $channel/messages/$playersMessage > /dev/null
 curl -s -X PATCH -H "Authorization: Bot $botToken" -H "Content-Type: application/json" -d "{\"name\":\"PLAYERS ONLINE: $playersOnline\"}" $categoryChannel > /dev/null
