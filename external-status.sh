@@ -43,21 +43,21 @@ fi
 ######################
 #Get list of players online
 ######################
-playersOnline=$(echo $javaAPI | jq '.players.online')
-
-players="Nobody is currently online..."
-count=0
-while [ $count -lt $playersOnline ]
-do
-  userName=$(echo $javaAPI | jq ".players.list[$count]" -r)
-  if [ ! "$players" == "Nobody is currently online..." ]
-  then
-    players="$players, $userName"
-  else
-    players="Players: $userName"
-  fi
-  ((count++))
-done
+#playersOnline=$(echo $javaAPI | jq '.players.online')
+#
+#players="Nobody is currently online..."
+#count=0
+#while [ $count -lt $playersOnline ]
+#do
+#  userName=$(echo $javaAPI | jq ".players.list[$count]" -r)
+#  if [ ! "$players" == "Nobody is currently online..." ]
+#  then
+#    players="$players, $userName"
+#  else
+#    players="Players: $userName"
+#  fi
+#  ((count++))
+#done
 
 ######################
 #Get cachetime and save to variable
@@ -73,11 +73,11 @@ fi
 ######################
 #Send Discord API calls
 ######################
-payload="{\"embeds\":[{\"description\":\"Java: $javaStatus\nBedrock: $bedrockStatus\n$players\nLast Ping: $cacheFormat\",\"title\":\"EXTERNAL STATUS: $globalStatus\",\"color\":\"$color\"}]}"
+payload="{\"embeds\":[{\"description\":\"Java: $javaStatus\nBedrock: $bedrockStatus\nLast Ping: $cacheFormat\",\"title\":\"EXTERNAL STATUS: $globalStatus\",\"color\":\"$color\"}]}"
 cycles=1
 while [ $cycles -le 3 ]
 do
-  respone=$(curl -s -X PATCH -H "Authorization: Bot $botToken" -H "Content-Type: application/json" -d "$payload" $channel/messages/$playersMessage)
+  response=$(curl -s -X PATCH -H "Authorization: Bot $botToken" -H "Content-Type: application/json" -d "$payload" $channel/messages/$playersMessage)
   if [ "$(echo $response | jq '.code')" == "30046" ]
   then
     cycles=$((cycles + 1))
@@ -86,4 +86,3 @@ do
     cycles=4
   fi
 done
-curl -s -X PATCH -H "Authorization: Bot $botToken" -H "Content-Type: application/json" -d "{\"name\":\"PLAYERS ONLINE: $playersOnline\"}" $categoryChannel > /dev/null

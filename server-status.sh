@@ -2,9 +2,13 @@
 
 botToken="OTUwNDcxMTMxOTM1MTc0NjU2.GiYi8J.ic7q4R4Yq-wZbTkXdD3QzJosayDqUSJFEMf8wo"
 statusChannel="https://discord.com/api/channels/1080752312122867722"
+categoryChannel="https://discord.com/api/channels/1080752233509040128"
 color="14559272"
 uptime="NA"
 state="UNKNOWN"
+playerCount=0
+globalCount=0
+playerList=""
 dateFormat=$(date +"%B %d %H:%M%Z")
 
 function=$1
@@ -51,12 +55,32 @@ getState () {
   fi
 }
 
+globalStatus () {
+  for i in $(curl -s localhost:9985/metrics | grep -oP ".*player=\"\K[\w\d_-]+(?=)")
+  do
+    ((globalCount++))
+  done
+  curl -s -X PATCH -H "Authorization: Bot $botToken" -H "Content-Type: application/json" -d "{\"name\":\"PLAYERS ONLINE: $globalCount\"}" $categoryChannel > /dev/null
+}
+
+getPlayers () {
+  for i in $(curl -s localhost:9985/metrics | grep -oP ".*$server.*player=\"\K[\w\d_-]+(?=)")
+  do
+    ((playerCount++))
+    if [[ $playerList == "" ]]
+    then
+      playerList="$i"
+    else
+      playerList="$playerList, $i"
+    fi
+  done
+}
+
 apiCall () {
-  getState
   cycles=1
   while [ $cycles -le 3 ]
   do
-    respone=$(curl -s -X PATCH -H "Authorization: Bot $botToken" -H "Content-Type: application/json" -d "{\"embeds\":[{\"title\":\"$(echo $server | awk '{print toupper($0)}') : $state\",\"description\":\"Uptime: $uptime\nLast Ping: $dateFormat\",\"color\":\"$color\"}]}" $statusChannel/messages/$messageID)
+    response=$(curl -s -X PATCH -H "Authorization: Bot $botToken" -H "Content-Type: application/json" -d "{\"embeds\":[{\"title\":\"$(echo $server | awk '{print toupper($0)}') : $state\",\"description\":\"Uptime: $uptime\nPlayers: $playerCount ($playerList)\nLast Ping: $dateFormat\",\"color\":\"$color\"}]}" $statusChannel/messages/$messageID)
     if [ "$(echo $response | jq '.code')" == "30046" ]
     then
       cycles=$((cycles + 1))
@@ -67,10 +91,17 @@ apiCall () {
   done
 }
 
+updateServer () {
+ getState
+ getPlayers
+ apiCall 
+}
+
 startServer () {
+  getState
   apiCall
   cycles2=1
-  while [ $cycles2 -le 5 ]
+  while [ $cycles2 -le 30 ]
   do
     getState
     if [ $state == "ACTIVE" ]
@@ -79,12 +110,14 @@ startServer () {
       cycles2=6
     else
       cycles2=$((cycles2 + 1))
-      sleep 10
+      sleep 2
     fi
   done
 }
 
 stopServer () {
+  globalStatus
+  getState
   apiCall
 }
 
